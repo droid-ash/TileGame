@@ -1,28 +1,33 @@
 package com.ash.tilegame
 
-import android.app.Dialog
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import androidx.appcompat.app.AlertDialog
+import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.GridLayoutManager
 import com.ash.tilegame.databinding.ActivityTileBinding
 
-class TileActivity : AppCompatActivity(), TileRecyclerAdapter.TileClickListener {
+class TileActivity : AppCompatActivity() {
 
-    private var tapCount: Int = 0
-    private var selectedNo: Int = -1
-    private lateinit var dialog: Dialog
     private lateinit var tileViewModel: TileViewModel
+    private lateinit var adapter: TileRecyclerAdapter
+
+    private val uiDataObserver : Observer<TileModel> = Observer { model ->
+        onUIDataChanged(model)
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         val binding = ActivityTileBinding.inflate(layoutInflater)
         setContentView(binding.root)
         tileViewModel = ViewModelProvider(this).get(TileViewModel::class.java)
-        selectedNo = intent.getIntExtra(KEY_SELECTED_NO, -1)
+        tileViewModel.uiLiveData.observe(this, uiDataObserver)
+        val selectedNo = intent.getIntExtra(KEY_SELECTED_NO, -1)
         supportActionBar?.title = resources.getString(R.string.msg_guess_no, selectedNo)
+        tileViewModel.setSelectedNumber(selectedNo)
         setUpRecyclerView(binding)
+        tileViewModel.onUIStarted()
     }
 
     private fun setUpRecyclerView(binding: ActivityTileBinding) {
@@ -30,42 +35,52 @@ class TileActivity : AppCompatActivity(), TileRecyclerAdapter.TileClickListener 
         val noOfColumns = calculateNoOfColumns(this, COLUMN_WIDTH)
         val gridLayoutManager = GridLayoutManager(this, noOfColumns)
         recyclerView.layoutManager = gridLayoutManager
-        val tileRecyclerAdapter = TileRecyclerAdapter(this)
-        recyclerView.adapter = tileRecyclerAdapter
-        tileViewModel.tileListLiveData.observe(this, {
-            if (it.isNullOrEmpty()) return@observe
-            tileRecyclerAdapter.setItems(it)
-        })
+        adapter = TileRecyclerAdapter(adapterListener)
+        recyclerView.adapter = adapter
     }
 
-    override fun onTileClicked(tileNo: Int) {
-        tapCount++
-        if (tapCount < MAX_TRY && tileNo != selectedNo) return
-        if (tileNo == selectedNo) {
-            showDialog(
+    private val adapterListener: TileRecyclerAdapter.TileClickListener = object : TileRecyclerAdapter.TileClickListener {
+
+        override fun onTileClicked(tile: Tile, position: Int) {
+            tileViewModel.onTileClicked(tile, position)
+        }
+
+    }
+
+    private fun showDialog(title: String, message: String) = AlertDialog.Builder(this).apply {
+        setMessage(message)
+        setTitle(title)
+        setPositiveButton(R.string.ok) { dialog, _ ->
+            dialog.dismiss()
+            finish()
+        }
+    }.create().apply {
+        setCancelable(false)
+        show()
+    }
+
+    private fun onUIDataChanged(model: TileModel) {
+
+        when(model.action) {
+
+            ACTION_NONE -> Unit
+
+            ACTION_UPDATE_UI -> adapter.setItems(model.list)
+
+            ACTION_SHOW_SUCCESS_DIALOG -> showDialog(
                 getString(R.string.title_congrats),
-                resources.getString(R.string.msg_won, selectedNo)
+                getString(R.string.msg_won, model.selectedNo)
             )
-        } else {
-            showDialog(
-                resources.getString(R.string.title_failed),
-                resources.getString(R.string.msg_try_limit)
+
+            ACTION_SHOW_FAILED_DIALOG -> showDialog(
+                getString(R.string.title_failed),
+                getString(R.string.msg_try_limit)
             )
+
+            else -> Unit
+
         }
+
     }
 
-    private fun showDialog(title: String, message: String) {
-        val builder: AlertDialog.Builder = AlertDialog.Builder(this)
-        builder.setMessage(message)
-            .setTitle(title)
-        builder.apply {
-            setPositiveButton(R.string.ok) { dialog, _ ->
-                dialog.dismiss()
-                finish()
-            }
-        }
-        dialog = builder.create()
-        dialog.setCancelable(false)
-        dialog.show()
-    }
 }
