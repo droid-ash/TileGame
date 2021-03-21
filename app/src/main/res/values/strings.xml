@@ -1,0 +1,24 @@
+<resources>
+    <string name="app_name">TileGame</string>
+    <string name="tap">Tap</string>
+    <string name="welcome_text">Welcome to Tile Guess Game. Select a number from below, and try to guess the selected number in next screen. You will get 3 chances to guess</string>
+    <string name="msg_select_no">Select a number from list</string>
+    <string name="ok">OK</string>
+    <string name="title_congrats">Congrats :)</string>
+    <string name="title_failed">Failed :(</string>
+    <string name="msg_won">You won, you were able to guess the position of: %1$d </string>
+    <string name="msg_try_limit">You have tried 3 times</string>
+    <string name="msg_guess_no">You have to guess: %1$d </string>
+    <string-array name="spinner_tile_numbers">
+        <item>Select a number</item>
+        <item>1</item>
+        <item>2</item>
+        <item>3</item>
+        <item>4</item>
+        <item>5</item>
+        <item>6</item>
+        <item>7</item>
+        <item>8</item>
+        <item>9</item>
+    </string-array>
+</resources>
