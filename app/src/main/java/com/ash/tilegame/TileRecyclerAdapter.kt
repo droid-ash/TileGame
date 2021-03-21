@@ -52,9 +52,7 @@ class TileRecyclerAdapter(private val tileClickListener: TileClickListener) :
         }
 
         fun passTileNo(tile: Tile) {
-
             this.tile = tile
-
             if (tile.isSelected) {
                 listItemBinding.text.text = tile.tileNumber.toString()
                 listItemBinding.root.setBackgroundColor(
@@ -63,7 +61,6 @@ class TileRecyclerAdapter(private val tileClickListener: TileClickListener) :
                         R.color.grey
                     )
                 )
-                listItemBinding.root.setOnClickListener(null)
             } else {
                 listItemBinding.text.text = listItemBinding.root.context.getString(R.string.tap)
                 listItemBinding.root.setBackgroundColor(
@@ -73,7 +70,6 @@ class TileRecyclerAdapter(private val tileClickListener: TileClickListener) :
                     )
                 )
             }
-
         }
 
         override fun onClick(v: View?) {

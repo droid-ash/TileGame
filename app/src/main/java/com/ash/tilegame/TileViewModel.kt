@@ -47,20 +47,15 @@ class TileViewModel : ViewModel() {
     }
 
     private fun getShuffledList(): List<Tile> = ArrayList<Tile>().apply {
-
         for (i in START_INT..END_INT) {
-
             add(
                 Tile(
                     tileNumber = i,
                     isSelected = false
                 )
             )
-
         }
-
         shuffle()
-
     }
 
     private fun notifyActionOnUI(action: Int) {
